@@ -6,10 +6,15 @@
 function isValidEmail(email) {
   if (typeof email !== "string") return false;
 
-  // Regex simplificada: exige usuario@dominio.tld
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const parts = email.split("@");
+  if (parts.length !== 2) return false;
 
-  return EMAIL_REGEX.test(email);
+  const [user, domain] = parts;
+  if (!user || !domain) return false;
+
+  // BUG: solo comprueba que el dominio contenga un punto,
+  // sin validar su posición (permite ".com", "dominio..com", etc.)
+  return domain.includes(".");
 }
 
 module.exports = { isValidEmail };
