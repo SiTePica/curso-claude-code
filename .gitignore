@@ -1,0 +1,9 @@
+node_modules/
+kohi.db
+kohi.db-shm
+kohi.db-wal
+.mcp.json
+.claude/settings.local.json
+.playwright-mcp/
+*.png
+.env
