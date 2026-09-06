@@ -1,0 +1,69 @@
+<title>Kōhi — Panel</title>
+<link rel="stylesheet" href="styles.css">
+
+<main class="dashboard card">
+  <h1 class="brand" style="text-align:center; margin:0 0 32px; font-size:1.6rem;">Kōhi</h1>
+
+  <div id="content">
+    <p class="greeting" id="greeting">Cargando...</p>
+    <p class="position-line" id="position-line"></p>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+    </div>
+
+    <div class="qr-box" id="qr-box"></div>
+
+    <button class="logout-link" id="logout-btn">Cerrar sesión</button>
+  </div>
+
+  <div id="message" class="message"></div>
+</main>
+
+<script>
+  const token = localStorage.getItem('kohi_token');
+  const messageEl = document.getElementById('message');
+  const content = document.getElementById('content');
+
+  function showError(text) {
+    content.style.display = 'none';
+    messageEl.textContent = text;
+    messageEl.className = 'message show error';
+  }
+
+  if (!token) {
+    window.location.href = 'login.html';
+  } else {
+    fetch('/api/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (response) => {
+        const data = await response.json();
+
+        if (!response.ok) {
+          localStorage.removeItem('kohi_token');
+          throw new Error(data.error || 'Sesión no válida.');
+        }
+
+        document.getElementById('greeting').textContent = `Hola, ${data.name}`;
+        document.getElementById('position-line').innerHTML =
+          `Eres el <strong>#${data.position}</strong> de <strong>${data.total}</strong> en la lista`;
+
+        const progress = Math.max(6, 100 - ((data.position - 1) / data.total) * 100);
+        document.getElementById('progress-fill').style.width = `${progress}%`;
+
+        document.getElementById('qr-box').textContent = `QR-${data.position}`;
+      })
+      .catch((err) => {
+        showError(err.message || 'No se pudo cargar tu panel.');
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+      });
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem('kohi_token');
+    window.location.href = 'login.html';
+  });
+</script>
